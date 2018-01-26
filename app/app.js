@@ -4,9 +4,13 @@ const snareFile = "https://freesound.org/data/previews/13/13750_32468-lq.mp3";
 
 let context = new (window.AudioContext || window.webkitAudioContext)();
 
-let instruments = new Map([["cowbell"]]);
+let instruments = new Map([["cowbell"], ["kick"], ["snare"]]);
+let source = {};
+let scheduledPlays = [];
+
 let gainNode,
-    source,
+    bpm = 1.00,
+    sixteenth = .25,
     metronomeOn = true;
 
 async function getBuffer(file, instrument) {
@@ -20,39 +24,45 @@ async function getBuffer(file, instrument) {
   
 }
 getBuffer(cowbellFile, "cowbell");
+getBuffer(kickFile, "kick");
+getBuffer(snareFile, "snare");
 
 function setup(instrument) {
    gainNode = context.createGain();
-   source = context.createBufferSource();
-   source.buffer = instruments.get(instrument);
-   source.connect(gainNode);
+   source[instrument] = context.createBufferSource();
+   source[instrument].buffer = instruments.get(instrument);
+   source[instrument].connect(gainNode);
    gainNode.connect(context.destination);
    gainNode.gain.setValueAtTime(0.8, context.currentTime);
-  
-  source.loop = true;
 }
    
 
-function loopMetronome(time, bpm, instrument) {
+function loopMetronome(time, instrument) {
   setup(instrument);
-  source.start(time);
-  source.loopEnd = bpm;
+  source[instrument].start(time);
+  source[instrument].loop = true;
+  source[instrument].loopEnd = bpm;
+}
+
+function playSample(time, instrument) {
+  setup(instrument);
+  source[instrument].start(time);
 }
 
 function stop() {
   var ct = context.currentTime + 0.1;
   gainNode.gain.exponentialRampToValueAtTime(0.001, ct);
-  source.stop(ct);
+  source["cowbell"].stop(ct);
 }
 
 let playBtn = document.querySelector("#play");
 let stopBtn = document.querySelector("#stop");
-let bpm = document.querySelector("input");
+let bpmInput = document.querySelector("input");
 
 playBtn.addEventListener("mousedown", function() {
-  const newBPM = (60 / bpm.value).toFixed(2);
+
   if(metronomeOn){
-    loopMetronome(context.currentTime, newBPM, "cowbell");
+    loopMetronome(context.currentTime, "cowbell");
   }
 })
 
@@ -60,8 +70,19 @@ stopBtn.addEventListener("click", function() {
   stop();
 })
 
-bpm.addEventListener("change", function(e) {
-  const newBPM = (60 / e.target.value).toFixed(2)
-  console.log(newBPM);
-  source.loopEnd = newBPM;
+bpmInput.addEventListener("change", function(e) {
+  bpm = (60 / e.target.value).toFixed(2);
+  partial = (bpm / 4).toFixed(2);
+  console.log(bpm);
+  if(source["cowbell"]){
+    source["cowbell"].loopEnd = bpm;
+  }
+  
+})
+
+document.querySelector("#instruments").addEventListener("click", (e) => {
+  if(e.target.className === "note"){
+    console.log(e.target.parentNode.parentNode.id)
+    playSample(context.currentTime, e.target.parentNode.parentNode.id);
+  }
 })
