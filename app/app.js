@@ -1,6 +1,8 @@
 const cowbellFile = "https://freesound.org/data/previews/34/34272_304419-lq.mp3";
 const kickFile = "https://freesound.org/data/previews/132/132584_2409787-lq.mp3";
 const snareFile = "https://freesound.org/data/previews/13/13750_32468-lq.mp3";
+const hihatFile = "https://freesound.org/data/previews/140/140514_177850-lq.mp3";
+const crashFile = "https://freesound.org/data/previews/13/13244_36719-lq.mp3";
 
 let context = new (window.AudioContext || window.webkitAudioContext)();
 let gainNode = context.createGain();
@@ -47,6 +49,8 @@ async function getBuffer(file, instrument) {
 getBuffer(cowbellFile, "cowbell");
 getBuffer(kickFile, "kick");
 getBuffer(snareFile, "snare");
+getBuffer(hihatFile, "hihat");
+getBuffer(crashFile, "crash");
 
 function setup(instrument) {
    let sourceNode = context.createBufferSource();
@@ -57,6 +61,7 @@ function setup(instrument) {
     beatsLeft += 1;
 
     sourceNode.onended = function(event) {
+      console.log('ended');
       beatsLeft -= 1;
       if(playing === true && beatsLeft === 3){
         playBeat()
