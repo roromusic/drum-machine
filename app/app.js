@@ -3,25 +3,36 @@ const kickFile = "https://freesound.org/data/previews/132/132584_2409787-lq.mp3"
 const snareFile = "https://freesound.org/data/previews/13/13750_32468-lq.mp3";
 
 let context = new (window.AudioContext || window.webkitAudioContext)();
-
+let gainNode = context.createGain();
+gainNode.connect(context.destination);
+gainNode.gain.setValueAtTime(0.8, context.currentTime);
 let instruments = new Map([["cowbell"], ["kick"], ["snare"]]);
-let source = {
-  cowbell: [],
-  kick: [],
-  snare: []
-};
 let scheduledPlays = [];
-let hits = {
-  kick: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-  snare: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
-};
 
-let gainNode,
-    bpm = 1.00,
+let hits = new Map([
+  [0, ["cowbell"]],
+  [1, []],
+  [2, []],
+  [3, []],
+  [4, ["cowbell"]],
+  [5, []],
+  [6, []],
+  [7, []],
+  [8, ["cowbell"]],
+  [9, []],
+  [10, []],
+  [11, []],
+  [12, ["cowbell"]],
+  [13, []],
+  [14, []],
+  [15, []],
+]);
+let bpm = 1.00,
     sixteenth = .25,
     nextRepeatPoint,
-    metronomeOn = false,
-    playing = false;
+    metronomeOn = true,
+    playing = false,
+    beatsLeft = 0;
 
 async function getBuffer(file, instrument) {
   const promise = await fetch(file);
@@ -38,29 +49,25 @@ getBuffer(kickFile, "kick");
 getBuffer(snareFile, "snare");
 
 function setup(instrument) {
-   gainNode = context.createGain();
    let sourceNode = context.createBufferSource();
    sourceNode.buffer = instruments.get(instrument);
    sourceNode.connect(gainNode);
-   source[instrument].push(sourceNode);
-   sourceNode.onended = function(event) {
-     source[instrument].shift();
-     if(playing === true && source[instrument].length === 0){
-       playBeat()
-     }
-   }
-   gainNode.connect(context.destination);
-   gainNode.gain.setValueAtTime(0.8, context.currentTime);
 
+  if(instrument === "cowbell"){
+    beatsLeft += 1;
+
+    sourceNode.onended = function(event) {
+      beatsLeft -= 1;
+      if(playing === true && beatsLeft === 3){
+        playBeat()
+      }
+    }
+   }
+
+   scheduledPlays.push(sourceNode);
+   
    return sourceNode;
 }  
-
-function loopMetronome(time, instrument) {
-  let sourceNode = setup(instrument);
-  sourceNode.start(time);
-  sourceNode.loop = true;
-  sourceNode.loopEnd = bpm;
-}
 
 function playSample(time, instrument) {
   let sourceNode = setup(instrument);
@@ -70,18 +77,12 @@ function playSample(time, instrument) {
 function playBeat() {
   const currentTime = nextRepeatPoint === undefined ? context.currentTime : nextRepeatPoint;
 
-  hits.kick.forEach((partial, index) => {
-    if(partial) {
-      playSample(currentTime + sixteenth * index, "kick")
+  hits.forEach((instrumentArr, partial) => {
+    if(instrumentArr.length !== 0) {
+      instrumentArr.forEach(instrument => {
+        playSample(currentTime + sixteenth * partial, instrument);
+      })
     }
-    
-  })
-
-  hits.snare.forEach((partial, index) => {
-    if(partial) {
-      playSample(currentTime + sixteenth * index, "snare")
-    }
-    
   })
 
   nextRepeatPoint = currentTime + bpm * 4;
@@ -89,8 +90,13 @@ function playBeat() {
 
 function stop() {
   var ct = context.currentTime + 0.1;
-  gainNode.gain.exponentialRampToValueAtTime(0.001, ct);
-  if (source["cowbell"][0]) source["cowbell"][0].stop(ct);
+  gainNode.gain.exponentialRampToValueAtTime(.01, ct);
+
+  scheduledPlays.forEach(node => node.stop());
+
+  playing = false;
+  nextRepeatPoint = undefined;
+  gainNode.gain.setValueAtTime(0.8, ct);
 }
 
 let playBtn = document.querySelector("#play");
@@ -98,12 +104,12 @@ let stopBtn = document.querySelector("#stop");
 let bpmInput = document.querySelector("input");
 
 playBtn.addEventListener("mousedown", function() {
-  playing = true;
-  if(metronomeOn){
-    loopMetronome(context.currentTime, "cowbell");
-  }else {
+  if(!playing){
     playBeat();
+  
+    playing = true;
   }
+  
 })
 
 stopBtn.addEventListener("click", function() {
@@ -111,23 +117,27 @@ stopBtn.addEventListener("click", function() {
 })
 
 bpmInput.addEventListener("change", function(e) {
-  bpm = (60 / e.target.value).toFixed(2);
-  sixteenth = (bpm / 4).toFixed(2);
+  bpm = (60 / e.target.value);
+  sixteenth = (bpm / 4);
   console.log(bpm);
-  if(source["cowbell"]){
-    source["cowbell"].loopEnd = bpm;
-  }
   
 })
 
 document.querySelector("#instruments").addEventListener("click", (e) => {
-  if(e.target.classList.contains("note")){
+  if(e.target.classList.contains("note") && !playing){
     const instrument = e.target.parentNode.parentNode.id;
-    const partial = e.target.getAttribute("data-partial");
+    const partial = Number(e.target.getAttribute("data-partial"));
+    let partialInstruments = hits.get(partial);
     
-    e.target.classList.toggle("note-play");
-    hits[instrument][partial] = !hits[instrument][partial];
-    console.log(hits[instrument][partial])
+    if(!partialInstruments.includes(instrument)){
+      partialInstruments.push(instrument);
+      hits.set(partial, partialInstruments);
+    }else {
+      hits.set(partial, partialInstruments.filter(item => item !== instrument));
+    }
+    
     playSample(context.currentTime, instrument);
+
+    e.target.classList.toggle("note-play");
   }
 })
