@@ -115,7 +115,7 @@ function showMeasure(timestamp) {
   if(progress > bpm * 1000) {
     resetMeasure();
     document.querySelector(".bars_measure" + measure).classList.toggle("bars_measure-selected");
-    animationFrame = timestamp;
+    animationFrame += bpm * 1000;
     measure === 4 ? measure = 1 : measure++;
   }
 
@@ -128,7 +128,7 @@ function resetMeasure() {
   document.querySelector(".bars_measure3").classList.toggle("bars_measure-selected", false);
   document.querySelector(".bars_measure4").classList.toggle("bars_measure-selected", false);
 
-  playing ? undefined : measure = 1;
+  playing ? undefined : measure = undefined;
   
 }
 
@@ -143,6 +143,7 @@ function stop() {
   gainNode.gain.setValueAtTime(0.8, ct);
 
   window.cancelAnimationFrame(animationRequest);
+  animationFrame = null;
   resetMeasure();
 
   bpmInput.disabled = false;
