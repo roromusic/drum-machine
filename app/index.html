@@ -8,10 +8,13 @@
     <link rel="stylesheet" type="text/css" media="screen" href="style.css" />
 </head>
 <body>
-    <input type="number" min="60" max='200' value="60">
-<button id="play">play</button>
-<button id="stop">stop</button>
-<div id="instruments">
+  <input class="bpm" type="number" min="60" max='200' value="60">
+  <button id="play">play</button>
+  <button id="stop">stop</button>
+  <input class="metronome" type="checkbox" checked>
+  <label for="metronome">metronome</label>
+
+  <div id="instruments">
   <div class="bars">
     <div class="bars_measure bars_measure1">1</div>
     <div class="bars_measure"></div>

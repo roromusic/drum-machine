@@ -6,14 +6,18 @@ const crashFile = "https://freesound.org/data/previews/13/13244_36719-lq.mp3";
 
 let context = new (window.AudioContext || window.webkitAudioContext)();
 let gainNode = context.createGain();
-gainNode.connect(context.destination);
-gainNode.gain.setValueAtTime(0.8, context.currentTime);
+    gainNode.connect(context.destination);
+    gainNode.gain.setValueAtTime(0.8, context.currentTime);
+let metGain = context.createGain();
+    metGain.connect(context.destination);
+    metGain.gain.setValueAtTime(0.8, context.currentTime);
 let instruments = new Map([["cowbell"], ["kick"], ["snare"]]);
 let scheduledPlays = [];
 
 let playBtn = document.querySelector("#play");
 let stopBtn = document.querySelector("#stop");
-let bpmInput = document.querySelector("input");
+let bpmInput = document.querySelector(".bpm");
+let metInput = document.querySelector(".metronome");
 
 let hits = new Map([
   [0, ["cowbell"]],
@@ -62,7 +66,7 @@ getBuffer(crashFile, "crash");
 function setup(instrument) {
    let sourceNode = context.createBufferSource();
    sourceNode.buffer = instruments.get(instrument);
-   sourceNode.connect(gainNode);
+   sourceNode.connect(instrument === "cowbell" ? metGain : gainNode);
 
   if(instrument === "cowbell"){
     beatsLeft += 1;
@@ -144,6 +148,13 @@ function stop() {
   bpmInput.disabled = false;
 }
 
+function toggleMet(e){
+  var ct = context.currentTime + 0.05;
+  
+  e.target.checked ? metGain.gain.exponentialRampToValueAtTime(.8, ct) : 
+                     metGain.gain.exponentialRampToValueAtTime(.001, ct);
+}
+
 playBtn.addEventListener("mousedown", function() {
   if(!playing){
     playBeat();
@@ -164,6 +175,10 @@ bpmInput.addEventListener("change", function(e) {
     bpm = (60 / e.target.value);
     sixteenth = (bpm / 4);
     console.log(bpm);
+})
+
+metInput.addEventListener("change", function(e){
+  toggleMet(e);
 })
 
 document.querySelector("#instruments").addEventListener("click", (e) => {
