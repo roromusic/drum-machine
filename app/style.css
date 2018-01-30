@@ -13,6 +13,21 @@
   padding: 10px;
 }
 
+.bars {
+  display: flex;
+}
+
+.bars_measure {
+  width: 30px;
+  text-align: center;
+  border-radius: 4px;
+  margin: 0 0 4px 4px;
+}
+
+.bars_measure-selected {
+  background-color: red;
+}
+
 .sample {
   display: flex;
 }
@@ -31,4 +46,5 @@
 .note-play {
   background-color: blue;
 }
+
 /*# sourceMappingURL=style.css.map */

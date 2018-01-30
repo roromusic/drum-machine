@@ -11,6 +11,10 @@ gainNode.gain.setValueAtTime(0.8, context.currentTime);
 let instruments = new Map([["cowbell"], ["kick"], ["snare"]]);
 let scheduledPlays = [];
 
+let playBtn = document.querySelector("#play");
+let stopBtn = document.querySelector("#stop");
+let bpmInput = document.querySelector("input");
+
 let hits = new Map([
   [0, ["cowbell"]],
   [1, []],
@@ -34,7 +38,10 @@ let bpm = 1.00,
     nextRepeatPoint,
     metronomeOn = true,
     playing = false,
-    beatsLeft = 0;
+    beatsLeft = 0,
+    measure = undefined,
+    animationFrame = null,
+    animationRequest;
 
 async function getBuffer(file, instrument) {
   const promise = await fetch(file);
@@ -61,7 +68,6 @@ function setup(instrument) {
     beatsLeft += 1;
 
     sourceNode.onended = function(event) {
-      console.log('ended');
       beatsLeft -= 1;
       if(playing === true && beatsLeft === 3){
         playBeat()
@@ -93,6 +99,35 @@ function playBeat() {
   nextRepeatPoint = currentTime + bpm * 4;
 }
 
+function showMeasure(timestamp) {
+  if(!animationFrame) animationFrame = timestamp;
+  let progress = timestamp - animationFrame;
+
+  if(measure === undefined) {
+    measure = 1;
+    document.querySelector(".bars_measure" + measure).classList.toggle("bars_measure-selected");
+    measure++;
+  } 
+  if(progress > bpm * 1000) {
+    resetMeasure();
+    document.querySelector(".bars_measure" + measure).classList.toggle("bars_measure-selected");
+    animationFrame = timestamp;
+    measure === 4 ? measure = 1 : measure++;
+  }
+
+  animationRequest = window.requestAnimationFrame(showMeasure);
+}
+
+function resetMeasure() {
+  document.querySelector(".bars_measure1").classList.toggle("bars_measure-selected", false);
+  document.querySelector(".bars_measure2").classList.toggle("bars_measure-selected", false);
+  document.querySelector(".bars_measure3").classList.toggle("bars_measure-selected", false);
+  document.querySelector(".bars_measure4").classList.toggle("bars_measure-selected", false);
+
+  playing ? undefined : measure = 1;
+  
+}
+
 function stop() {
   var ct = context.currentTime + 0.1;
   gainNode.gain.exponentialRampToValueAtTime(.01, ct);
@@ -102,17 +137,21 @@ function stop() {
   playing = false;
   nextRepeatPoint = undefined;
   gainNode.gain.setValueAtTime(0.8, ct);
-}
 
-let playBtn = document.querySelector("#play");
-let stopBtn = document.querySelector("#stop");
-let bpmInput = document.querySelector("input");
+  window.cancelAnimationFrame(animationRequest);
+  resetMeasure();
+
+  bpmInput.disabled = false;
+}
 
 playBtn.addEventListener("mousedown", function() {
   if(!playing){
     playBeat();
+    window.requestAnimationFrame(showMeasure);
   
     playing = true;
+
+    bpmInput.disabled = true;
   }
   
 })
@@ -122,10 +161,9 @@ stopBtn.addEventListener("click", function() {
 })
 
 bpmInput.addEventListener("change", function(e) {
-  bpm = (60 / e.target.value);
-  sixteenth = (bpm / 4);
-  console.log(bpm);
-  
+    bpm = (60 / e.target.value);
+    sixteenth = (bpm / 4);
+    console.log(bpm);
 })
 
 document.querySelector("#instruments").addEventListener("click", (e) => {
