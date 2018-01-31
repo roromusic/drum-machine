@@ -16,27 +16,10 @@ let scheduledPlays = [];
 
 let playBtn = document.querySelector("#play");
 let stopBtn = document.querySelector("#stop");
-let bpmInput = document.querySelector(".bpm");
+let bpmInput = document.querySelector(".bpm_input");
 let metInput = document.querySelector(".metronome");
+let patternList = document.querySelector(".controls_patterns");
 
-let hits = new Map([
-  [0, ["cowbell"]],
-  [1, []],
-  [2, []],
-  [3, []],
-  [4, ["cowbell"]],
-  [5, []],
-  [6, []],
-  [7, []],
-  [8, ["cowbell"]],
-  [9, []],
-  [10, []],
-  [11, []],
-  [12, ["cowbell"]],
-  [13, []],
-  [14, []],
-  [15, []],
-]);
 let bpm = 1.00,
     sixteenth = .25,
     nextRepeatPoint,
@@ -45,7 +28,10 @@ let bpm = 1.00,
     beatsLeft = 0,
     measure = undefined,
     animationFrame = null,
-    animationRequest;
+    animationRequest,
+    displayedPattern = 1;
+
+  let patterns = [newPattern()];
 
 async function getBuffer(file, instrument) {
   const promise = await fetch(file);
@@ -62,6 +48,27 @@ getBuffer(kickFile, "kick");
 getBuffer(snareFile, "snare");
 getBuffer(hihatFile, "hihat");
 getBuffer(crashFile, "crash");
+
+function newPattern() {
+  return new Map([
+    [0, ["cowbell"]],
+    [1, []],
+    [2, []],
+    [3, []],
+    [4, ["cowbell"]],
+    [5, []],
+    [6, []],
+    [7, []],
+    [8, ["cowbell"]],
+    [9, []],
+    [10, []],
+    [11, []],
+    [12, ["cowbell"]],
+    [13, []],
+    [14, []],
+    [15, []],
+  ]);
+}
 
 function setup(instrument) {
    let sourceNode = context.createBufferSource();
@@ -92,15 +99,17 @@ function playSample(time, instrument) {
 function playBeat() {
   const currentTime = nextRepeatPoint === undefined ? context.currentTime : nextRepeatPoint;
 
-  hits.forEach((instrumentArr, partial) => {
-    if(instrumentArr.length !== 0) {
-      instrumentArr.forEach(instrument => {
-        playSample(currentTime + sixteenth * partial, instrument);
-      })
-    }
+  patterns.forEach((pattern, index) => {
+    pattern.forEach((instrumentArr, partial) => {
+      if(instrumentArr.length !== 0) {
+        instrumentArr.forEach(instrument => {
+          playSample(currentTime + (sixteenth * partial) + (bpm * 4 * index), instrument);
+        })
+      }
+    })
   })
 
-  nextRepeatPoint = currentTime + bpm * 4;
+  nextRepeatPoint = currentTime + (bpm * 4 * patterns.length);
 }
 
 function showMeasure(timestamp) {
@@ -116,7 +125,14 @@ function showMeasure(timestamp) {
     resetMeasure();
     document.querySelector(".bars_measure" + measure).classList.toggle("bars_measure-selected");
     animationFrame += bpm * 1000;
-    measure === 4 ? measure = 1 : measure++;
+    if(measure === 4 ){
+      measure = 1;
+    }else {
+      if(measure === 1){
+        patterns.length > displayedPattern ? switchPattern(Number(displayedPattern) + 1) : switchPattern(1);
+      }
+      measure++;
+    }
   }
 
   animationRequest = window.requestAnimationFrame(showMeasure);
@@ -156,9 +172,36 @@ function toggleMet(e){
                      metGain.gain.exponentialRampToValueAtTime(.001, ct);
 }
 
+function switchPattern(pattern){
+  console.log(pattern);
+
+  //clicking on current pattern doesn't do anything
+  if(pattern != displayedPattern){
+    //toggle selected button
+    document.querySelector(".controls_pattern" + displayedPattern).classList.toggle("controls_pattern-selected");
+    document.querySelector(".controls_pattern" + pattern).classList.toggle("controls_pattern-selected");
+
+    //reset partial(display)
+    document.querySelectorAll(".note-play").forEach(node => node.classList.toggle("note-play"));
+    displayedPattern = pattern;
+
+    //show correct partial selections
+    if(patterns[pattern - 1]){
+      patterns[pattern -1].forEach((instrumentArr, partial) => {
+        instrumentArr.forEach(instrument => {
+          if(instrument !== "cowbell"){
+            document.querySelector("." + instrument + "_" + partial).classList.toggle("note-play");
+          }
+        })
+      })
+    }
+  }
+}
+
 playBtn.addEventListener("mousedown", function() {
   if(!playing){
     playBeat();
+    switchPattern(1);
     window.requestAnimationFrame(showMeasure);
   
     playing = true;
@@ -186,17 +229,27 @@ document.querySelector("#instruments").addEventListener("click", (e) => {
   if(e.target.classList.contains("note") && !playing){
     const instrument = e.target.parentNode.parentNode.id;
     const partial = Number(e.target.getAttribute("data-partial"));
-    let partialInstruments = hits.get(partial);
+
+    if(!patterns[displayedPattern - 1]){
+      patterns[displayedPattern - 1] = newPattern();
+    }
+    let partialInstruments = patterns[displayedPattern - 1].get(partial);
     
     if(!partialInstruments.includes(instrument)){
       partialInstruments.push(instrument);
-      hits.set(partial, partialInstruments);
+      patterns[displayedPattern - 1].set(partial, partialInstruments);
     }else {
-      hits.set(partial, partialInstruments.filter(item => item !== instrument));
+      patterns[displayedPattern - 1].set(partial, partialInstruments.filter(item => item !== instrument));
     }
     
     playSample(context.currentTime, instrument);
 
     e.target.classList.toggle("note-play");
+  }
+})
+
+patternList.addEventListener("click", (e) => {
+  if(e.target.classList.contains("controls_pattern") && !playing){
+    switchPattern(e.target.getAttribute("data-pattern"));
   }
 })
