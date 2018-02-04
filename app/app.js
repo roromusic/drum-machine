@@ -18,7 +18,9 @@ let playBtn = document.querySelector("#play");
 let stopBtn = document.querySelector("#stop");
 let bpmInput = document.querySelector(".bpm_input");
 let metInput = document.querySelector(".metronome");
-let patternList = document.querySelector(".controls_patterns");
+let patternList = document.querySelector(".drum-machine_patterns");
+let displayMeasure = document.querySelector(".measure_measure");
+let displayBeat = document.querySelector(".measure_beat");
 
 let bpm = 1.00,
     sixteenth = .25,
@@ -119,11 +121,13 @@ function showMeasure(timestamp) {
   if(measure === undefined) {
     measure = 1;
     document.querySelector(".bars_measure" + measure).classList.toggle("bars_measure-selected");
+    displayBeat.innerHTML = measure;
     measure++;
   } 
   if(progress > bpm * 1000) {
     resetMeasure();
     document.querySelector(".bars_measure" + measure).classList.toggle("bars_measure-selected");
+    displayBeat.innerHTML = measure;
     animationFrame += bpm * 1000;
     if(measure === 4 ){
       measure = 1;
@@ -178,8 +182,9 @@ function switchPattern(pattern){
   //clicking on current pattern doesn't do anything
   if(pattern != displayedPattern){
     //toggle selected button
-    document.querySelector(".controls_pattern" + displayedPattern).classList.toggle("controls_pattern-selected");
-    document.querySelector(".controls_pattern" + pattern).classList.toggle("controls_pattern-selected");
+    document.querySelector(".drum-machine_pattern" + displayedPattern).classList.toggle("drum-machine_pattern-selected");
+    document.querySelector(".drum-machine_pattern" + pattern).classList.toggle("drum-machine_pattern-selected");
+    displayMeasure.innerHTML = pattern;
 
     //reset partial(display)
     document.querySelectorAll(".note-play").forEach(node => node.classList.toggle("note-play"));
@@ -225,7 +230,7 @@ metInput.addEventListener("change", function(e){
   toggleMet(e);
 })
 
-document.querySelector("#instruments").addEventListener("click", (e) => {
+document.querySelector(".drum-machine").addEventListener("click", (e) => {
   if(e.target.classList.contains("note") && !playing){
     const instrument = e.target.parentNode.parentNode.id;
     const partial = Number(e.target.getAttribute("data-partial"));
@@ -249,7 +254,7 @@ document.querySelector("#instruments").addEventListener("click", (e) => {
 })
 
 patternList.addEventListener("click", (e) => {
-  if(e.target.classList.contains("controls_pattern") && !playing){
+  if(e.target.classList.contains("drum-machine_pattern") && !playing){
     switchPattern(e.target.getAttribute("data-pattern"));
   }
 })

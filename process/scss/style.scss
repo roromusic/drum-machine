@@ -1,42 +1,159 @@
+$dark-gray: #181818;
+$gray: #313131;
+$green: #47CF73;
+$red: #E70041;
+$display: #111C0B;
+$purple: #AE63E4;
+$blue: #0EBEFF;
+
 * {
     margin: 0;
     padding: 0;
   }
 
+body {
+  font-family: 'Roboto', 'sans-serif';
+  background-color: $dark-gray;
+}
+
+.header {
+  background-color: black;
+  color: white;
+  height: 60px;
+  padding: 0 55px;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 18px;
+}
+
 .controls {
   display: flex;
-  margin: 20px;
-  justify-content: space-between;
+  padding: 10px 20px;
+  justify-content: center;
+  background-color: $gray;
 }
 
 .controls_left {
   display: flex;
-  flex-grow: 1;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: space-evenly;
 }
 
-.controls_patterns {
+.play-stop {
   display: flex;
-  justify-content: flex-end;
-  flex-grow: 1;
-}
-.controls_pattern {
-  width: 50px;
-  margin-left: 5px;
-  border-radius: 3px;
+  justify-content: space-around;
+  margin-bottom: 10px;
 }
 
-.controls_pattern-selected {
-  background-color: blue;
+.play-stop_button {
+  display: flex;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
+  background-color: black;
+  border: 0;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 2px #444444;
+  position: relative;
 }
-#instruments {
+
+.play-stop_button:active {
+  box-shadow: 0 1px #444444;
+  top: 2px;
+}
+
+.play_button {
+  border: 0;
+  background: transparent;
+  box-sizing: border-box;
+  width: 0;
+
+  border-color: transparent transparent transparent $green;
+  border-style: solid;
+  border-width: 13px 0 13px 22px;
+}
+
+.stop_button {
+  width: 22px;
+  height: 22px;
+  background-color: $red;
+}
+
+.display {
+  background-color: $display;
+  display: flex;
+  color: $green;
+  padding: 10px 40px;
+  margin-left: 20px;
+}
+
+.measure_number {
+  display: flex;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.measure_beat {
+  border-left: 1px solid;
+  margin-left: 10px;
+  padding-left: 10px;
+}
+
+.measure_title {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.bpm {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 75px;
+  margin-left: 30px;
+}
+
+.bpm_input{
+  font-size: 36px;
+  font-weight: 700;
+  color: $green;
+  background-color: inherit;
+  border: none;
+  outline: none;
+}
+
+.drum-machine {
   width: 600px;
-  margin: 20px;
+  margin: 20px auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  background-color: gray;
-  padding: 10px;
+  background-color: $gray;
+  padding: 20px;
+  color: white;
+}
+
+.drum-machine_patterns {
+  align-self: center;
+  margin-bottom: 15px;
+}
+
+.drum-machine_pattern {
+  width: 50px;
+  margin-left: 5px;
+  border-radius: 3px;
+  border: none;
+  outline: none;
+  background-color: white;
+}
+
+.drum-machine_pattern-selected {
+  background-color: $green;
 }
 
 .bars {
@@ -51,7 +168,7 @@
 }
 
 .bars_measure-selected {
-  background-color: red;
+  background-color: $purple;
 }
 
 .sample {
@@ -67,8 +184,9 @@
   height: 30px;
   border: none;
   border-radius: 4px;
+  outline: none;
 }
 
 .note-play {
-  background-color: blue;
+  background-color: $blue;
 }
