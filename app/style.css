@@ -119,18 +119,16 @@ body {
 }
 
 .drum-machine {
-  width: 600px;
   margin: 20px auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   background-color: #313131;
   padding: 20px;
   color: white;
 }
 
 .drum-machine_patterns {
-  align-self: center;
   margin-bottom: 15px;
 }
 
@@ -147,15 +145,20 @@ body {
   background-color: #47CF73;
 }
 
+.drum-machine_instruments {
+  display: flex;
+  align-items: flex-end;
+}
+
 .bars {
   display: flex;
 }
 
 .bars_measure {
-  width: 30px;
+  width: 25px;
   text-align: center;
   border-radius: 4px;
-  margin: 0 0 4px 4px;
+  margin: 0 4px 4px 0;
 }
 
 .bars_measure-selected {
@@ -167,19 +170,44 @@ body {
 }
 
 .sample-name {
-  padding-right: 5px;
+  padding-right: 10px;
+  margin-bottom: 4px;
+  height: 25px;
+  line-height: 25px;
+}
+
+.notes {
+  display: flex;
+  margin-bottom: 4px;
 }
 
 .note {
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   border: none;
   border-radius: 4px;
   outline: none;
+  margin-right: 4px;
 }
 
 .note-play {
   background-color: #0EBEFF;
+}
+
+@media screen and (min-width: 768px) {
+  .drum-machine {
+    width: 600px;
+  }
+  .sample-name {
+    height: 30px;
+  }
+  .bars_measure {
+    width: 30px;
+  }
+  .note {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 /*# sourceMappingURL=style.css.map */

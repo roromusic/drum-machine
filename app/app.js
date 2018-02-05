@@ -232,7 +232,7 @@ metInput.addEventListener("change", function(e){
 
 document.querySelector(".drum-machine").addEventListener("click", (e) => {
   if(e.target.classList.contains("note") && !playing){
-    const instrument = e.target.parentNode.parentNode.id;
+    const instrument = e.target.parentNode.getAttribute("data-instrument");
     const partial = Number(e.target.getAttribute("data-partial"));
 
     if(!patterns[displayedPattern - 1]){
