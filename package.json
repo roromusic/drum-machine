@@ -4,19 +4,26 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm-run-all --parallel dev:*",
+    "dev:sass-dev": "node-sass --watch process/scss --output-style expanded --source-map true  process/scss/style.scss --output app",
+    "dev:serve": "live-server app",
+    "build": "npm-run-all prod:*",
+    "prod:setup": "mkdirp builds",
+    "prod:sass-dev": "node-sass --output-style compressed process/scss/style.scss --output builds",
+    "prod:js-uglify": "uglifyjs app/app.js --compress --mangle --output builds/app.js",
+    "prod:html-minify": "html-minifier --collapse-whitespace app/index.html > builds/index.html",
+    "prod:serve": "live-server builds"
   },
   "author": "",
   "license": "ISC",
-  "scripts": {
-    "start": "npm-run-all --parallel dev:*",
-    "dev:sass-dev": "node-sass --watch process/scss --output-style expanded --source-map true  process/scss/style.scss --output app",
-    "dev:serve": "live-server app"
-  },
   "devDependencies": {
+    "html-minifier": "^3.5.8",
     "live-server": "^1.2.0",
+    "mkdirp": "^0.5.1",
     "node-sass": "^4.7.2",
     "npm-run-all": "^4.1.2",
+    "uglify-es": "^3.3.9",
+    "uglifyjs": "^2.4.11",
     "webpack": "^3.10.0"
   }
 }
